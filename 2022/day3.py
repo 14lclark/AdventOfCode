@@ -13,6 +13,25 @@ def part1():
                 if i in set(halves[1]):
                     total += priorities[i]
         print(total)
-                    
+
+def find_shared(s1: str, s2: str) -> str:
+    shared = ""
+    for i in s1:
+        if i in s2 and i not in shared:
+            shared += i
+    return shared
+
 def part2():
-    pass
+    total = 0
+    with open('2022/day3.txt') as f:
+        linenummod3 = 0
+        lines = ["","",""]
+        for line in f:
+            lines[linenummod3] = line.rstrip()
+            if linenummod3 == 2:
+                total += priorities[find_shared(lines[0],find_shared(lines[1],lines[2]))]
+            linenummod3 = int((linenummod3 + 1) % 3)
+        
+    print(total)
+
+part2()
