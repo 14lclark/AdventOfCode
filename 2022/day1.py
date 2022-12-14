@@ -2,7 +2,7 @@
 
 def part1():
     large = 0
-    with open('day1.txt') as f:
+    with open('./2022/day1.txt') as f:
         acc = 0
         for line in f:
 
@@ -21,7 +21,7 @@ def part1():
 
 def part2():
     large = []
-    with open('day1.txt') as f:
+    with open('./2022/day1.txt') as f:
         acc = 0
         for line in f:
 
@@ -36,5 +36,5 @@ def part2():
         large.sort(reverse=True)
 
     print(large[0]+large[1]+large[2])
-
+part1()
 part2()
