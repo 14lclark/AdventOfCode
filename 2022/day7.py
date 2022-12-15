@@ -50,96 +50,69 @@ def make_file_structure(txt):
             else:
                 top[current_path_str]['files'][args[1]] = int(args[0])
     return top
-
-def part1(largest_size):
-    top = make_file_structure('2022/day7.txt')
-    
-    total = 0
-    for path in top:
-        size = directory_size(top, path)  
-        if size <= largest_size:
-            # print(f"{size=}")
-            total += size
-            # print(f"{total=}")
-    print(total)
             
-# part1(100_000)
-
-def part2(delete_size, file_system_size):
-    top = make_file_structure('2022/day7.txt')
-    
-    smallest = file_system_size
-    smallest_path = '/'
-    
-    count = 0
-    for path in top:
-        count += 1
-        size = directory_size(top, path)
-        print(size, path)
-        if size >= delete_size and size <= smallest:
-            smallest = size
-            smallest_path = path
-    # print(top)
-
-    print(smallest_path, smallest)
-
-# part2(1_000_000, 9_000_000_000)
-    
-# part2(8_381_165, 70_000_000)
-
-###
-# //rbmstsf/ngflwbmp/jthnmqs/zdvj/smjvcql/qcqljj/
-
 def dir_str(dir):
     acc = ''
     for i in dir:
         acc += i + '/'
     return acc
 
-def part2_second(txt):
+def directories_and_sizes(txt) -> dict:
     with open(txt) as f:
         current_dir = []
         
         # [dir, size]
-        seen_and_size = []
+        seen_and_size = {}
         for line in f:
             args = line.split()
             if args[0] == '$':
                 if args[1] == 'cd':
                     if args[2] == '/':
                         current_dir = ['top']
-                        if current_dir not in [i[0] for i in seen_and_size]:
-                            seen_and_size.append([current_dir, 0])
-                            print('world')
+                        if dir_str(current_dir) not in seen_and_size.keys():
+                            seen_and_size["top/"] = 0
+
                     elif args[2] == '..':
                         current_dir.pop()
                         
                     else:
                         # print(args[2])
                         current_dir.append(args[2])
-                        print(f'{current_dir}')
-                        print(f'{seen_and_size=}')
-                        if current_dir not in [i[0] for i in seen_and_size]:
-                            print(current_dir)
-                            print('hello')
-                            seen_and_size.append([current_dir, 0]) 
-                            
+                        if dir_str(current_dir) not in seen_and_size.keys():
+                            seen_and_size[dir_str(current_dir)] = 0     
                     continue
                 if args[1] == 'ls':
                     continue
             if args[0] == 'dir':
                 continue
-            for i in seen_and_size:
-                dir = i[0]
+            for dir in seen_and_size:
+                
                 # print(i)
                 # print(current_dir)
                 # print(dir)
-                if dir == current_dir[:len(dir)]:
+                if dir in dir_str(current_dir):
                     # print(args[0])
-                    print(i[1])
-                    i[1] += int(args[0])
-                
-            
-        print('h',seen_and_size)            
-part2_second('2022/day7test.txt')
-            
+                    seen_and_size[dir] += int(args[0])
+        return(seen_and_size)
+
+def part1(txt, max_size):
+    dir_sizes = directories_and_sizes(txt)
+    count = 0
+    for dir, size in dir_sizes.items():
+        if size <= max_size:
+            count += size
+    return count
+
+def part2(txt, needed_size, file_system_size):
+    dir_sizes = directories_and_sizes(txt)
+    delete_size = needed_size - (file_system_size - dir_sizes['top/'])
+
+    smallest = dir_sizes['top/']
+    for size in dir_sizes.values():
+        if size >= delete_size and size <= smallest:
+            smallest = size
+    return smallest
+
+print('part1', part1('2022/day7.txt', 100_000))
+print('part2', part2('2022/day7.txt', 30_000_000, 70_000_000))
+        
