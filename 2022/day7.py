@@ -1,3 +1,5 @@
+# make space on communication device
+
 def directory_size(dirs: dict, sumpath: str):
     total = 0
     for path, ls in dirs.items(): 
