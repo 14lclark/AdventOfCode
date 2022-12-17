@@ -1,5 +1,8 @@
 # pressure release valve
-
+class Graph:
+    def __init__(self, connections):
+        if connections is None:
+            self.vertices = {}
 def make_connections(txt):
     connections = {}
     with open(txt) as f:
@@ -10,10 +13,36 @@ def make_connections(txt):
             connections[tokens[1]] = {'rate': rate, 'tunnels': tunnels}
     return connections
 
-def search(graph: dict, start, steps: list):
-    while True:
-        
-        pass
+def search(graph: dict, start: str, time_left: int, released=0, open: list=None):
+    if time_left == 1:
+        if start not in open:
+            return released, [open]
+        return released, ['walk']
+
+    steps = []
+    total_pressure = 0
+    if open is None:
+        open = list()
+    options = []
+    max_pressure = 0
+    new_steps = []
+    for next in graph[start]['tunnels']:
+        option = search(graph, next, time_left-1, open=(open + [start]))
+        if option[0] > max_pressure:
+            max_pressure = option[0]
+            new_steps = option[1]    
+
+        for second_step in graph[next]['tunnels']:
+            option = search(graph, next, time_left-2, open=(open))
+            if option[0] > max_pressure:
+                max_pressure = option[0]
+                if time_left - 2 > 0:
+                    new_steps = ['walk'] + option[1] 
+                else:
+                    new_steps = []
+
+    total_pressure = calc_total_pressure(new_steps, graph, time_left)
+    return total_pressure, new_steps
 
 def dijkstra_shortest_path(graph: dict, start, stop, max_steps=10) -> list:
     current = start
@@ -59,7 +88,23 @@ def calc_total_pressure(steps, connections, total_time):
 def part1(txt):
     connections = make_connections(txt)
     print(connections)
-    dijkstra_shortest_path(connections, 'AA','HH', max_iters=10)
+
+    return search(connections_prime,"AA",30)
+    ## Test calc_total_pressure
+    # w = 'walk'
+    # A = 'AA'
+    # B = "BB"
+    # C = "CC"
+    # D = "DD"
+    # E = "EE"
+    # F = "FF"
+    # G = "GG"
+    # H = "HH"
+    # I = "II"
+    # J = "JJ"
+    # return calc_total_pressure([w, D, w, w, B, w, w, w, J, \
+    #                     w, w, w, w, w, w, w, H, w, w, \
+    #                     w, E, w, w, C], connections, 30)
     
     
 print(part1('2022/day16test.txt'))
