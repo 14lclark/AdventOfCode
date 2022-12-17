@@ -34,9 +34,9 @@ def part2(txt, lines, px_per_line):
     middle_coord = [evaluate(instructions, cycle) for cycle in range(1, lines * px_per_line + 1)]
     crt = [['.' for _ in range(px_per_line)] for _ in range(lines)]
     
-    for cycle in range(1, lines * px_per_line+1):
-        if (cycle-1) % 40 in [middle_coord[cycle-1] + i for i in (-1, 0, 1)]:
-             crt[(cycle - 1) // 40][(cycle-1) % 40] = "#"
+    for cycle in range(0, lines * px_per_line):
+        if (cycle) % 40 in [middle_coord[cycle] + i for i in (-1, 0, 1)]:
+             crt[(cycle) // 40][(cycle) % 40] = "#"
              
     return crt
 print(part1('2022/day10.txt', [20,60,100,140,180,220]))
