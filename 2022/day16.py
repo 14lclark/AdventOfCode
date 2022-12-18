@@ -1,65 +1,33 @@
 # pressure release valve
-class Graph:
-    def __init__(self, connections):
-        if connections is None:
-            self.vertices = {}
+
 def make_connections(txt):
     connections = {}
     with open(txt) as f:
         for line in f:
             tokens = line.rstrip().split()
             rate = int(tokens[4].strip(';').split('=')[1])
-            tunnels = [i.strip(', ') for i in tokens[9:]]
-            connections[tokens[1]] = {'rate': rate, 'tunnels': tunnels}
+            neighbors = [i.strip(', ') for i in tokens[9:]]
+            connections[tokens[1]] = {'rate': rate, 'neighbors': neighbors}
     return connections
 
-def search(graph: dict, start: str, time_left: int, released=0, open: list=None):
-    if time_left == 1:
-        if start not in open:
-            return released, [open]
-        return released, ['walk']
+def dijkstra_shortest_path(graph: dict, source) -> list:
+    prev = []
+    distance_to_source = {i: len(graph) + 10 for i in graph}
+    distance_to_source[source] = 0
+    prev_in_shortest_path = {}
+    vertices = [v for v in graph]
+    while len(vertices):
+        closest = min(vertices, key=distance_to_source.get)
+        vertices.remove(closest)
 
-    steps = []
-    total_pressure = 0
-    if open is None:
-        open = list()
-    options = []
-    max_pressure = 0
-    new_steps = []
-    for next in graph[start]['tunnels']:
-        option = search(graph, next, time_left-1, open=(open + [start]))
-        if option[0] > max_pressure:
-            max_pressure = option[0]
-            new_steps = option[1]    
+        for neighbor in set(graph[closest]['neighbors']) & set(vertices):
+            alt_dist = distance_to_source[closest] + 1
+            if alt_dist < distance_to_source[neighbor]:
+                distance_to_source[neighbor] = alt_dist
+                prev_in_shortest_path[neighbor] = closest
 
-        for second_step in graph[next]['tunnels']:
-            option = search(graph, next, time_left-2, open=(open))
-            if option[0] > max_pressure:
-                max_pressure = option[0]
-                if time_left - 2 > 0:
-                    new_steps = ['walk'] + option[1] 
-                else:
-                    new_steps = []
-
-    total_pressure = calc_total_pressure(new_steps, graph, time_left)
-    return total_pressure, new_steps
-
-def dijkstra_shortest_path(graph: dict, start, stop, max_steps=10) -> list:
-    current = start
     
-    distance_to_start = {i: -1 for i in graph}
-    distance_to_start[start] = 0
-    path_to_start = {start: []}
-    for i in graph[current]['tunnels']:
-        if 0 <= distance_to_start[i] <= distance_to_start[current]:
-            continue
-        
-        distance_to_start[i] = distance_to_start[current] + 1
-        path_to_start[i] = path_to_start[current].append(i)
-        
-    
-        
-        
+    return distance_to_source, prev_in_shortest_path
     
 
 def calc_total_pressure(steps, connections, total_time):
@@ -79,32 +47,50 @@ def calc_total_pressure(steps, connections, total_time):
         total_released_pressure += total_rate * (total_time - t)
     
     return total_released_pressure
-        
-        
-        
-            
-    
 
-def part1(txt):
+
+def part1(txt, start, total_time):
     connections = make_connections(txt)
     print(connections)
+    source = start
+    time_left = total_time
+    closed = [i for i in connections if connections[i]['rate'] != 0]
+    total_released_pressure = 0
 
-    return search(connections_prime,"AA",30)
-    ## Test calc_total_pressure
-    # w = 'walk'
-    # A = 'AA'
-    # B = "BB"
-    # C = "CC"
-    # D = "DD"
-    # E = "EE"
-    # F = "FF"
-    # G = "GG"
-    # H = "HH"
-    # I = "II"
-    # J = "JJ"
-    # return calc_total_pressure([w, D, w, w, B, w, w, w, J, \
-    #                     w, w, w, w, w, w, w, H, w, w, \
-    #                     w, E, w, w, C], connections, 30)
+    while time_left > 0:
+        dist, prev_in_path = \
+            dijkstra_shortest_path(connections,source)
+        max_released = 0
+        max_score = 0
+        max_valve = None
+        for valve in closed:
+            rate = connections[valve]['rate']
+            distance = dist[valve]
+            # print(distance)
+            if not rate:
+                continue
+            if distance >= time_left:
+                continue
+        
+            released = rate * (time_left - distance - 1 )
+            score = released / distance**2
+            print(score)
+            if score > max_score:
+                max_released = released
+                max_score = score
+                max_valve = valve
+            print(f'{valve, max_released=}')        
+        if max_valve is None:
+            break
+        else:
+            closed.remove(max_valve)
+
+        time_left -= dist[max_valve] + 1
+        print(max_valve)
+        print(time_left)
+        total_released_pressure += max_released
+        source = max_valve
+    print(closed)
+    return total_released_pressure
     
-    
-print(part1('2022/day16test.txt'))
+print(part1('2022/day16.txt', "AA", 30))
