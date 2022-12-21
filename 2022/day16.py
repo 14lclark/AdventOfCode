@@ -106,14 +106,14 @@ def path_from_prev(prev: dict, source, target):
 
     while t != source:
         path = [t] + path
+        
         t = prev[t]
-    
+
     return path
         
 def path_to_next(connections, dist_prev, source, \
                closed, time_left):
     dist, prev_in_path = dist_prev
-    max_released = 0
     max_score = 0
     max_valve = None
     for valve in closed:
@@ -127,11 +127,11 @@ def path_to_next(connections, dist_prev, source, \
         score = released / distance**2
         # print(score)
         if score > max_score:
-            max_released = released
             max_score = score
             max_valve = valve
         # print(f'{valve, max_released=}') 
-        print(max_valve)  
+         
+    # print(max_valve)
     if max_valve == None:
         return None
     
@@ -148,19 +148,18 @@ def part2(txt, start, total_time):
     print(connections)
     source = start
     closed = [i for i in connections if connections[i]['rate'] != 0]
+    print(closed)
     total_released_pressure = 0
 
-    ppl = {'me':  {'pos': source, 'dest': None, 'path': []}} \
-                #'ele': {'pos': source, 'dest': None, 'path': []}}
+    ppl = {'You ':  {'pos': source, 'dest': None, 'path': [], 'grammar': {'open': 'open', 'is': 'are', 'move': 'move'}}, \
+                'The elephant ': {'pos': source, 'dest': None, 'path': [], 'grammar': {'open': 'opens', 'is': 'is', 'move': 'moves'}}}
     total_rate = 0
-    added_rates = 0
     time = 1
     for p in ppl:
-        pos = ppl[p]['pos']
         dist_prev = \
-            dijkstra_shortest_path(connections,pos)
+            dijkstra_shortest_path(connections,ppl[p]['pos'])
         ppl[p]['path'] = \
-            path_to_next(connections, dist_prev, pos, \
+            path_to_next(connections, dist_prev, ppl[p]['pos'], \
                          closed, total_time - time)
         ppl[p]['dest'] = ppl[p]['path'][-1]  
         # closed.remove(ppl[p]['path'][-1])   
@@ -172,9 +171,12 @@ def part2(txt, start, total_time):
 
     print(ppl)
     while time <= total_time:
+        # print(ppl['You ']['path'])
+        # print(ppl['You ']['pos'])
+        # print(ppl['You ']['dest'])
         print(f"== Minute {time} ==")
-        total_rate += added_rates
-
+        
+        total_rate = sum([connections[i]['rate'] for i in open_valves])
         if not open_valves:
             print("No valves are open.")
         else:
@@ -186,31 +188,31 @@ def part2(txt, start, total_time):
             print(f"{x} open, releasing {total_rate} pressure.")
 
         total_released_pressure += total_rate
-        added_rates = 0
-        for person in ppl:
-            if person in completed:
+        for p in ppl:
+            if p in completed:
+                # print()
                 continue
-     
-            if ppl[person]['path'] is None:
-                completed.append(person)
-                continue
-            
-            ppl[person]['pos'] = ppl[person]['path'][0]
-            ppl[person]['path'].remove(ppl[person]['pos'])                
-
-            pos = ppl[person]['pos']
-            dest = ppl[person]['dest']            
-            if pos == dest:
-                open_valves.append(dest)
-                added_rates += connections[pos]['rate']
+                  
+            if ppl[p]['pos'] == ppl[p]['dest']:
+                open_valves.append(ppl[p]['dest'])
+                open_valves.sort()
+                print(p + ppl[p]['grammar']['open'] + " valve " + ppl[p]['pos'] + '.')
                 dist_prev = \
-                    dijkstra_shortest_path(connections,pos)
-                ppl[person]['path'] = \
-                    path_to_next(connections, dist_prev, pos, \
+                    dijkstra_shortest_path(connections,ppl[p]['pos'])
+                ppl[p]['path'] = \
+                    path_to_next(connections, dist_prev, ppl[p]['pos'], \
                                  closed, total_time - time)     
+                if ppl[p]['path'] is None:
+                    completed.append(p)
+                    continue
+                ppl[p]['dest'] = ppl[p]['path'][-1]
+                continue
 
-                ppl[person]['dest'] = ppl[person]['path'][-1]
-                # closed.remove(ppl[person]['dest'])
+            
+            ppl[p]['pos'] = ppl[p]['path'][0]
+            print(p + ppl[p]['grammar']['move'] + " to valve " + ppl[p]['pos'] + '.')
+            ppl[p]['path'].remove(ppl[p]['path'][0])
+        print()
         # print(f'{time, added_rates, total_rate=}')
         time += 1
     return total_released_pressure

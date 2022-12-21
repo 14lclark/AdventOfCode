@@ -44,7 +44,7 @@ def update_until_settled(move_iterator, grid, new_rock_index):
             seen[rocks[i][0]] = True 
             if all(seen):
                 all_coords_seen_index = i
-                print( - i)
+                
                 break
         else:
             all_coords_seen_index=0
@@ -113,8 +113,8 @@ def part1(txt):
         heights.append(grid['height'])
     
     return grid, heights
-grid, heights = part1('2022/day17test.txt')
-print(grid['height'])
+# grid, heights = part1('2022/day17test.txt')
+# print(grid['height'])
 # diffs = [heights[i] - heights[i-1] for i in range(1,len(heights))]
 # print(diffs)
 
@@ -128,24 +128,24 @@ def part2(txt):
     # grid : {max_height: [rock coords]}
     grid = {'height': 0, 'coords': []}
     heights = []
-    i = 0
+    k = 0
     last_height = 0
     diffs = []
     while True:
-        rock_index = i % 5
+        rock_index = k % 5
         grid = update_until_settled(moves, grid, rock_index)
-        
-        diffs.append(grid['height'] - last_height)
-        last_height = grid['height']
-        if i % 2 == 0 and i != 0 and i > 700_000:
-            # found = diffs[:i//2] == diffs[i//2:i]
-            found = not any(diffs[:i//2][j] - diffs[i//2:i][j] != 0 for j in range(i//2))
-            if found and i > 2:
-                break
+        heights.append(grid['height'])
+        if k == 10_000:
+            break
+    
+    for i in range(10_001//2):    
+        print(i)
+        found = not any(heights[j+i] - heights[j] != 0 for j in range(10_001//2))
+        if found:
+            print(i)
         if i % 1000 == 0:
             print(i)
-        i += 1
     return grid, i//2
 
-# grid, cycle_length = part2('2022/day17test.txt')
+grid, cycle_length = part2('2022/day17test.txt')
 # print(cycle_length)
