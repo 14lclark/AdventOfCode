@@ -93,4 +93,126 @@ def part1(txt, start, total_time):
     print(closed)
     return total_released_pressure
     
-print(part1('2022/day16.txt', "AA", 30))
+# print(part1('2022/day16.txt', "AA", 30))
+
+def path_from_prev(prev: dict, source, target):
+    path = []
+    if target == source: 
+        return path
+    if prev[target] == source:
+        return [target]
+
+    t, s = target, source
+
+    while t != source:
+        path = [t] + path
+        t = prev[t]
+    
+    return path
+        
+def path_to_next(connections, dist_prev, source, \
+               closed, time_left):
+    dist, prev_in_path = dist_prev
+    max_released = 0
+    max_score = 0
+    max_valve = None
+    for valve in closed:
+        rate = connections[valve]['rate']
+        distance = dist[valve]
+        # print(distance)
+        if distance + 1 >= time_left:
+            continue
+    
+        released = rate * (time_left - distance - 1 )
+        score = released / distance**2
+        # print(score)
+        if score > max_score:
+            max_released = released
+            max_score = score
+            max_valve = valve
+        # print(f'{valve, max_released=}') 
+        print(max_valve)  
+    if max_valve == None:
+        return None
+    
+    closed.remove(max_valve)
+    return path_from_prev(prev_in_path, source, max_valve)
+    # if max_valve is None:
+    #     break
+    # else:
+    #     closed.remove(max_valve)
+
+
+def part2(txt, start, total_time):
+    connections = make_connections(txt)
+    print(connections)
+    source = start
+    closed = [i for i in connections if connections[i]['rate'] != 0]
+    total_released_pressure = 0
+
+    ppl = {'me':  {'pos': source, 'dest': None, 'path': []}} \
+                #'ele': {'pos': source, 'dest': None, 'path': []}}
+    total_rate = 0
+    added_rates = 0
+    time = 1
+    for p in ppl:
+        pos = ppl[p]['pos']
+        dist_prev = \
+            dijkstra_shortest_path(connections,pos)
+        ppl[p]['path'] = \
+            path_to_next(connections, dist_prev, pos, \
+                         closed, total_time - time)
+        ppl[p]['dest'] = ppl[p]['path'][-1]  
+        # closed.remove(ppl[p]['path'][-1])   
+
+    
+
+    completed = []
+    open_valves = []
+
+    print(ppl)
+    while time <= total_time:
+        print(f"== Minute {time} ==")
+        total_rate += added_rates
+
+        if not open_valves:
+            print("No valves are open.")
+        else:
+            x = "Valves " + ', '.join(open_valves[:-1]) + ', and ' + str(open_valves[-1] + " are")
+            if len(open_valves) == 1:
+                x = "Valve " + str(open_valves[0] + " is")
+            if len(open_valves) == 2:
+                x = "Valves " + str(open_valves[0]) + " and " + str(open_valves[1] + " are")
+            print(f"{x} open, releasing {total_rate} pressure.")
+
+        total_released_pressure += total_rate
+        added_rates = 0
+        for person in ppl:
+            if person in completed:
+                continue
+     
+            if ppl[person]['path'] is None:
+                completed.append(person)
+                continue
+            
+            ppl[person]['pos'] = ppl[person]['path'][0]
+            ppl[person]['path'].remove(ppl[person]['pos'])                
+
+            pos = ppl[person]['pos']
+            dest = ppl[person]['dest']            
+            if pos == dest:
+                open_valves.append(dest)
+                added_rates += connections[pos]['rate']
+                dist_prev = \
+                    dijkstra_shortest_path(connections,pos)
+                ppl[person]['path'] = \
+                    path_to_next(connections, dist_prev, pos, \
+                                 closed, total_time - time)     
+
+                ppl[person]['dest'] = ppl[person]['path'][-1]
+                # closed.remove(ppl[person]['dest'])
+        # print(f'{time, added_rates, total_rate=}')
+        time += 1
+    return total_released_pressure
+
+print(part2('2022/day16test.txt', "AA", 26))

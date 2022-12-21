@@ -113,8 +113,8 @@ def part1(txt):
         heights.append(grid['height'])
     
     return grid, heights
-# grid, heights = part1('2022/day17test.txt')
-# print(grid['height'])
+grid, heights = part1('2022/day17test.txt')
+print(grid['height'])
 # diffs = [heights[i] - heights[i-1] for i in range(1,len(heights))]
 # print(diffs)
 
@@ -147,5 +147,5 @@ def part2(txt):
         i += 1
     return grid, i//2
 
-grid, cycle_length = part2('2022/day17test.txt')
-print(cycle_length)
+# grid, cycle_length = part2('2022/day17test.txt')
+# print(cycle_length)
