@@ -112,18 +112,19 @@ def path_from_prev(prev: dict, source, target):
     return path
         
 def path_to_next(connections, dist_prev, source, \
-               closed, time_left):
+               closed): #, time_left):
     dist, prev_in_path = dist_prev
     max_score = 0
     max_valve = None
+    # print(closed)
     for valve in closed:
         rate = connections[valve]['rate']
         distance = dist[valve]
         # print(distance)
-        if distance + 1 >= time_left:
-            continue
-    
-        released = rate * (time_left - distance - 1 )
+        # if distance + 1 >= time_left:
+        #     continue
+        # print('hu')
+        released = rate #* (time_left - distance - 1 )
         score = released / distance**2
         # print(score)
         if score > max_score:
@@ -151,16 +152,19 @@ def part2(txt, start, total_time):
     print(closed)
     total_released_pressure = 0
 
-    ppl = {'You ':  {'pos': source, 'dest': None, 'path': [], 'grammar': {'open': 'open', 'is': 'are', 'move': 'move'}}, \
-                'The elephant ': {'pos': source, 'dest': None, 'path': [], 'grammar': {'open': 'opens', 'is': 'is', 'move': 'moves'}}}
+    ppl = {'You ':  {'pos': source, 'dest': None, 'path': [], 'grammar': {'open': 'open', 'is': 'are', 'move': 'move'}}}#, \
+                #'The elephant ': {'pos': source, 'dest': None, 'path': [], 'grammar': {'open': 'opens', 'is': 'is', 'move': 'moves'}}}
     total_rate = 0
     time = 1
     for p in ppl:
+        
         dist_prev = \
             dijkstra_shortest_path(connections,ppl[p]['pos'])
+        
         ppl[p]['path'] = \
-            path_to_next(connections, dist_prev, ppl[p]['pos'], \
-                         closed, total_time - time)
+            path_to_next(connections, dist_prev, \
+                         ppl[p]['pos'], closed)#, total_time - time)
+        
         ppl[p]['dest'] = ppl[p]['path'][-1]  
         # closed.remove(ppl[p]['path'][-1])   
 
@@ -201,7 +205,7 @@ def part2(txt, start, total_time):
                     dijkstra_shortest_path(connections,ppl[p]['pos'])
                 ppl[p]['path'] = \
                     path_to_next(connections, dist_prev, ppl[p]['pos'], \
-                                 closed, total_time - time)     
+                                 closed) #, total_time - time)     
                 if ppl[p]['path'] is None:
                     completed.append(p)
                     continue
@@ -217,4 +221,4 @@ def part2(txt, start, total_time):
         time += 1
     return total_released_pressure
 
-print(part2('2022/day16test.txt', "AA", 26))
+print(part2('2022/day16test.txt', "AA", 30))
