@@ -31,5 +31,3 @@ for x in txt:
     out2.append(p)
 print(sum(out1))
 print(sum(out2))
-        
-    
