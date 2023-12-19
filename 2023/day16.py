@@ -4,9 +4,6 @@ b = "day16test.txt"
 with open(a) as f:
     txt = [x for x in f.read().strip().split('\n')]
 
-
-prev = []
-
 left = (-1, 0)
 right = (1, 0)
 up = (0, -1)
@@ -15,7 +12,6 @@ down = (0, 1)
 pos = 1
 dir = 2
 rays = [{pos: (0,0), dir: right}]
-
 
 def determine_energized(start, direction):
     energized = []
@@ -99,7 +95,7 @@ for j in range(len(txt[0])):
     emax = max(map(len, [ed, eu, er, el]))
     if emax > m:
         m = emax
-        
+
 print(m)
 # field = [["." for _ in range(len(txt[0]))] for _ in range(len(txt))]
 # for i,j in arg[0]:
